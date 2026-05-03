@@ -8,7 +8,7 @@ import useAuth from '../../hooks/useAuth';
 import Avatar from '../common/Avatar';
 import { SIDEBAR_LINKS } from '../../utils/constants';
 import { useSelector } from 'react-redux';
-import logo from '../../Pictures/logo.png';
+import logo from '../../PIctures/logo.png';
 
 const ICON_MAP = {
   LayoutDashboard, CheckSquare, FileText, Users,
