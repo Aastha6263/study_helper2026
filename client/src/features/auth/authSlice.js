@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// Render backend URL
+const BASE = import.meta.env.VITE_API_URL || 'https://stydysync-2.onrender.com';
 
 export const loginUser = createAsyncThunk(
   'auth/login',
@@ -75,11 +76,11 @@ export const getMe = createAsyncThunk(
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
-    user:     null,
-    token:    localStorage.getItem('studysync_token') || null,
-    loading:  false,
-    error:    null,
-    hydrated: !localStorage.getItem('studysync_token'), // true if no token
+    user: null,
+    token: localStorage.getItem('studysync_token') || null,
+    loading: false,
+    error: null,
+    hydrated: !localStorage.getItem('studysync_token'),
   },
   reducers: {
     setToken: (state, action) => {
@@ -87,8 +88,8 @@ const authSlice = createSlice({
       localStorage.setItem('studysync_token', action.payload);
     },
     clearAuth: (state) => {
-      state.user     = null;
-      state.token    = null;
+      state.user = null;
+      state.token = null;
       state.hydrated = true;
       localStorage.removeItem('studysync_token');
     },
@@ -100,39 +101,39 @@ const authSlice = createSlice({
     builder
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
-        state.error   = null;
+        state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.loading  = false;
-        state.user     = action.payload.user;
-        state.token    = action.payload.token;
+        state.loading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
         state.hydrated = true;
         localStorage.setItem('studysync_token', action.payload.token);
       })
       .addCase(loginUser.rejected, (state, action) => {
-        state.loading  = false;
-        state.error    = action.payload;
+        state.loading = false;
+        state.error = action.payload;
         state.hydrated = true;
       })
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
-        state.error   = null;
+        state.error = null;
       })
       .addCase(registerUser.fulfilled, (state, action) => {
-        state.loading  = false;
-        state.user     = action.payload.user;
-        state.token    = action.payload.token;
+        state.loading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
         state.hydrated = true;
         localStorage.setItem('studysync_token', action.payload.token);
       })
       .addCase(registerUser.rejected, (state, action) => {
-        state.loading  = false;
-        state.error    = action.payload;
+        state.loading = false;
+        state.error = action.payload;
         state.hydrated = true;
       })
       .addCase(logoutUser.fulfilled, (state) => {
-        state.user     = null;
-        state.token    = null;
+        state.user = null;
+        state.token = null;
         state.hydrated = true;
         localStorage.removeItem('studysync_token');
       })
@@ -140,14 +141,14 @@ const authSlice = createSlice({
         state.loading = true;
       })
       .addCase(getMe.fulfilled, (state, action) => {
-        state.loading  = false;
-        state.user     = action.payload.user;
+        state.loading = false;
+        state.user = action.payload.user;
         state.hydrated = true;
       })
       .addCase(getMe.rejected, (state) => {
-        state.loading  = false;
-        state.user     = null;
-        state.token    = null;
+        state.loading = false;
+        state.user = null;
+        state.token = null;
         state.hydrated = true;
         localStorage.removeItem('studysync_token');
       });
