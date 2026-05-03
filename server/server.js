@@ -29,8 +29,11 @@ dotenv.config();
 connectDB();
 
 // ── Third-party services ──────────────────────────────────────────────────────
-initFirebase();
-verifyMailer();
+if (process.env.NODE_ENV === "production") {
+  initFirebase();
+  verifyMailer();
+  registerCronJobs(io);
+}
 
 const app        = express();
 const httpServer = http.createServer(app);
