@@ -35,7 +35,6 @@ import QuizesPage from './pages/QuizePage';
 
 // Layout
 import AppLayout from './components/layout/AppLayout';
-import AI from './pages/AIAssistantPage';
 
 
 // Loader
