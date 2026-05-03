@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 // Render backend URL
-const BASE = import.meta.env.VITE_API_URL || 'https://stydysync-2.onrender.com';
+const BASE = 'https://stydysync-2.onrender.com';
 
 export const loginUser = createAsyncThunk(
   'auth/login',
