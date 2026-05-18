@@ -1,21 +1,28 @@
+// =========================
+// FILE: middleware/authMiddleware.js
+// =========================
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
-// Protect any route — requires valid JWT
+// Protect routes — JWT required
 export const protect = async (req, res, next) => {
   try {
     let token;
 
-    // Check HTTP-only cookie first, then Authorization header
+    // 1. Check HTTP-only cookie
     if (req.cookies?.studysync_token) {
       token = req.cookies.studysync_token;
-    } else if (
+    }
+
+    // 2. Check Bearer token
+    else if (
       req.headers.authorization &&
       req.headers.authorization.startsWith('Bearer ')
     ) {
       token = req.headers.authorization.split(' ')[1];
     }
 
+    // No token found
     if (!token) {
       return res.status(401).json({
         success: false,
@@ -23,11 +30,12 @@ export const protect = async (req, res, next) => {
       });
     }
 
-    // Verify token
+    // Verify JWT
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Attach user to request (exclude password)
+    // Find user
     const user = await User.findById(decoded.id).select('-password');
+
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -35,6 +43,7 @@ export const protect = async (req, res, next) => {
       });
     }
 
+    // Account inactive
     if (!user.isActive) {
       return res.status(403).json({
         success: false,
@@ -42,15 +51,20 @@ export const protect = async (req, res, next) => {
       });
     }
 
+    // Attach user to request
     req.user = user;
+
     next();
   } catch (error) {
+    // Token expired
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({
         success: false,
         message: 'Session expired. Please log in again.',
       });
     }
+
+    // Invalid token
     return res.status(401).json({
       success: false,
       message: 'Not authorized. Invalid token.',
@@ -58,8 +72,10 @@ export const protect = async (req, res, next) => {
   }
 };
 
-// Role-based access control
+// =========================
+// ROLE-BASED ACCESS CONTROL
 // Usage: authorize('teacher', 'admin')
+// =========================
 export const authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
@@ -68,11 +84,14 @@ export const authorize = (...roles) => {
         message: `Role '${req.user.role}' is not allowed to access this resource.`,
       });
     }
+
     next();
   };
 };
 
-// Verify email is confirmed before allowing access
+// =========================
+// EMAIL VERIFICATION CHECK
+// =========================
 export const requireEmailVerified = (req, res, next) => {
   if (!req.user.isEmailVerified) {
     return res.status(403).json({
@@ -80,5 +99,6 @@ export const requireEmailVerified = (req, res, next) => {
       message: 'Please verify your email address first.',
     });
   }
+
   next();
 };

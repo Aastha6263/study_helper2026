@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 const DistractionTrackerPage = () => {
   const [focusTime, setFocusTime] = useState(0);
@@ -30,9 +30,9 @@ const DistractionTrackerPage = () => {
       }
     };
 
-    document.addEventListener("visibilitychange", handleVisibility);
+    document.addEventListener('visibilitychange', handleVisibility);
     return () =>
-      document.removeEventListener("visibilitychange", handleVisibility);
+      document.removeEventListener('visibilitychange', handleVisibility);
   }, []);
 
   /* 💤 IDLE DETECTION */
@@ -56,15 +56,15 @@ const DistractionTrackerPage = () => {
       }, 1000);
     };
 
-    window.addEventListener("mousemove", resetTimer);
-    window.addEventListener("keydown", resetTimer);
+    window.addEventListener('mousemove', resetTimer);
+    window.addEventListener('keydown', resetTimer);
 
     startIdleTimer();
 
     return () => {
       clearInterval(idleTimer);
-      window.removeEventListener("mousemove", resetTimer);
-      window.removeEventListener("keydown", resetTimer);
+      window.removeEventListener('mousemove', resetTimer);
+      window.removeEventListener('keydown', resetTimer);
     };
   }, []);
 
@@ -72,18 +72,14 @@ const DistractionTrackerPage = () => {
   const formatTime = (t) => {
     const m = Math.floor(t / 60);
     const s = t % 60;
-    return `${m}:${s < 10 ? "0" : ""}${s}`;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
   /* 🎯 SCORE */
-  const score = Math.max(
-    0,
-    100 - distractions * 5 - Math.floor(idleTime / 2)
-  );
+  const score = Math.max(0, 100 - distractions * 5 - Math.floor(idleTime / 2));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-100 p-6">
-
       <h1 className="text-3xl font-bold text-center mb-6">
         🧠 Distraction Tracker
       </h1>
@@ -105,9 +101,7 @@ const DistractionTrackerPage = () => {
       {/* Score */}
       <div className="max-w-md mx-auto bg-white p-6 rounded-xl shadow text-center">
         <h2 className="text-lg">Focus Score</h2>
-        <p className="text-5xl font-bold text-green-600">
-          {score}%
-        </p>
+        <p className="text-5xl font-bold text-green-600">{score}%</p>
 
         <div className="w-full bg-gray-200 h-3 rounded mt-3">
           <div
@@ -116,7 +110,6 @@ const DistractionTrackerPage = () => {
           />
         </div>
       </div>
-
     </div>
   );
 };

@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState } from 'react';
 
 const FileSharingAdvanced = () => {
   const [files, setFiles] = useState([]);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [dragActive, setDragActive] = useState(false);
 
   /* 📂 HANDLE FILES */
@@ -10,7 +10,7 @@ const FileSharingAdvanced = () => {
     const newFiles = Array.from(selectedFiles).map((file) => ({
       id: Date.now() + file.name,
       name: file.name,
-      size: (file.size / 1024).toFixed(2) + " KB",
+      size: (file.size / 1024).toFixed(2) + ' KB',
       type: file.type,
       url: URL.createObjectURL(file),
       time: new Date().toLocaleTimeString(),
@@ -39,21 +39,20 @@ const FileSharingAdvanced = () => {
 
   /* 🔍 SEARCH */
   const filteredFiles = files.filter((f) =>
-    f.name.toLowerCase().includes(search.toLowerCase())
+    f.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   /* 📄 ICON */
   const getIcon = (type) => {
-    if (type.includes("image")) return "🖼";
-    if (type.includes("pdf")) return "📄";
-    if (type.includes("word")) return "📝";
-    if (type.includes("video")) return "🎥";
-    return "📁";
+    if (type.includes('image')) return '🖼';
+    if (type.includes('pdf')) return '📄';
+    if (type.includes('word')) return '📝';
+    if (type.includes('video')) return '🎥';
+    return '📁';
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-100 p-6">
-
       <h1 className="text-3xl font-bold text-center mb-6">
         📂 File Sharing System
       </h1>
@@ -71,7 +70,7 @@ const FileSharingAdvanced = () => {
       {/* 📂 DRAG AREA */}
       <div
         className={`max-w-xl mx-auto mb-6 p-6 border-2 border-dashed rounded-xl text-center cursor-pointer
-        ${dragActive ? "bg-blue-200" : "bg-white"}`}
+        ${dragActive ? 'bg-blue-200' : 'bg-white'}`}
         onDragOver={(e) => {
           e.preventDefault();
           setDragActive(true);
@@ -86,7 +85,6 @@ const FileSharingAdvanced = () => {
 
       {/* 📂 FILE LIST */}
       <div className="max-w-xl mx-auto space-y-3">
-
         {filteredFiles.length === 0 && (
           <p className="text-center text-gray-500">No files</p>
         )}
@@ -97,10 +95,7 @@ const FileSharingAdvanced = () => {
             className="bg-white p-4 rounded-xl shadow flex justify-between items-center hover:scale-[1.02] transition"
           >
             <div className="flex items-center gap-3">
-
-              <span className="text-2xl">
-                {getIcon(file.type)}
-              </span>
+              <span className="text-2xl">{getIcon(file.type)}</span>
 
               <div>
                 <p className="font-semibold">{file.name}</p>
@@ -111,9 +106,8 @@ const FileSharingAdvanced = () => {
             </div>
 
             <div className="flex gap-3">
-
               {/* Preview */}
-              {file.type.includes("image") && (
+              {file.type.includes('image') && (
                 <a
                   href={file.url}
                   target="_blank"
@@ -125,11 +119,7 @@ const FileSharingAdvanced = () => {
               )}
 
               {/* Download */}
-              <a
-                href={file.url}
-                download={file.name}
-                className="text-blue-600"
-              >
+              <a href={file.url} download={file.name} className="text-blue-600">
                 Download
               </a>
 
@@ -140,13 +130,10 @@ const FileSharingAdvanced = () => {
               >
                 Delete
               </button>
-
             </div>
           </div>
         ))}
-
       </div>
-
     </div>
   );
 };

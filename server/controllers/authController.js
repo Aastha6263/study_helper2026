@@ -1,187 +1,219 @@
-import crypto from 'crypto';
 import User from '../models/User.js';
-import { generateTokenAndSetCookie } from '../utils/generateToken.js';
+import bcrypt from 'bcryptjs';
+import generateToken from '../utils/generateToken.js';
 
-export const login = async (req, res) => {
+/* ================= REGISTER USER ================= */
+export const registerUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    console.log('REGISTER BODY:', req.body);
 
-    if (!email || !password) {
-      return res.status(400).json({ success: false, message: 'Email and password are required.' });
-    }
-
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
-
-    if (!user) {
-      return res.status(401).json({ success: false, message: 'Invalid email or password.' });
-    }
-
-    if (!user.isActive) {
-      return res.status(403).json({ success: false, message: 'Your account has been deactivated.' });
-    }
-
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid email or password.' });
-    }
-
-    // ✅ FIX: findByIdAndUpdate — pre-save hook trigger nahi hoga
-    await User.findByIdAndUpdate(user._id, { lastSeen: new Date() });
-
-    const token = generateTokenAndSetCookie(res, user._id);
-    const freshUser = await User.findById(user._id);
-
-    return res.status(200).json({
-      success: true,
-      message: 'Logged in successfully.',
-      token,
-      user: freshUser,
-    });
-  } catch (error) {
-    console.error('Login error:', error.message);
-    return res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-export const register = async (req, res) => {
-  try {
     const { name, email, password, role } = req.body;
 
-    if (!name || !email || !password || !role) {
-      return res.status(400).json({ success: false, message: 'All fields are required.' });
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        field: 'email',
+        message: 'User already exists',
+      });
     }
 
-    if (!['student', 'teacher', 'parent'].includes(role)) {
-      return res.status(400).json({ success: false, message: 'Invalid role.' });
-    }
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    const existing = await User.findOne({ email: email.toLowerCase() });
-    if (existing) {
-      return res.status(400).json({ success: false, message: 'An account with this email already exists.' });
-    }
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role,
+    });
 
-    // User.create → pre-save → password hash ✅
-    const user = await User.create({ name, email, password, role, isEmailVerified: true });
-    const token = generateTokenAndSetCookie(res, user._id);
-
-    return res.status(201).json({ success: true, message: 'Account created successfully.', token, user });
+    return res.status(201).json({
+      success: true,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        bio: user.bio || '',
+        github: user.github || '',
+        linkedin: user.linkedin || '',
+        avatarUrl: user.avatarUrl || '',
+        skills: user.skills || [],
+        xp: user.xp || 0,
+        streak: user.streak || 0,
+        completedTasks: user.completedTasks || 0,
+        token: generateToken(user._id, user.role),
+      },
+    });
   } catch (error) {
-    console.error('Register error:', error.message);
-    return res.status(500).json({ success: false, message: error.message });
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-export const logout = (req, res) => {
-  res.cookie('studysync_token', '', {
-    httpOnly: true,
-    expires: new Date(0),
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-  });
-  return res.status(200).json({ success: true, message: 'Logged out.' });
-};
-
+/* ================= GET CURRENT USER ================= */
 export const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id)
-      .populate('children', 'name email role avatar')
-      .populate('parentAccount', 'name email')
-      .populate('managedRooms', 'name subject');
-    return res.status(200).json({ success: true, user });
-  } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-export const verifyEmail = async (req, res) => {
-  try {
-    const user = await User.findOne({ emailVerificationToken: req.params.token });
+    const user = await User.findById(req.user._id).select('-password');
     if (!user) {
-      return res.status(400).json({ success: false, message: 'Invalid token.' });
+      return res.status(404).json({ success: false, message: 'User not found.' });
     }
-    // ✅ FIX: findByIdAndUpdate
-    await User.findByIdAndUpdate(user._id, {
-      isEmailVerified: true,
-      emailVerificationToken: null,
-    });
-    return res.status(200).json({ success: true, message: 'Email verified.' });
-  } catch (error) {
-    return res.status(400).json({ success: false, message: error.message });
-  }
-};
 
-export const forgotPassword = async (req, res) => {
-  try {
-    const user = await User.findOne({ email: req.body.email });
-    if (!user) {
-      return res.status(200).json({ success: true, message: 'If that email exists, a reset link has been sent.' });
-    }
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    // ✅ FIX: findByIdAndUpdate
-    await User.findByIdAndUpdate(user._id, {
-      resetPasswordToken:  crypto.createHash('sha256').update(resetToken).digest('hex'),
-      resetPasswordExpire: new Date(Date.now() + 30 * 60 * 1000),
-    });
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
-      message: 'Reset link sent.',
-      ...(process.env.NODE_ENV === 'development' && { resetToken }),
+      user,
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export const resetPassword = async (req, res) => {
-  try {
-    const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
-    const user = await User.findOne({
-      resetPasswordToken:  hashedToken,
-      resetPasswordExpire: { $gt: Date.now() },
-    });
-    if (!user) {
-      return res.status(400).json({ success: false, message: 'Invalid or expired link.' });
-    }
-    // ✅ user.save() intentional — password hash zaroori hai
-    user.password = req.body.password;
-    user.resetPasswordToken = null;
-    user.resetPasswordExpire = null;
-    await user.save();
-    const token = generateTokenAndSetCookie(res, user._id);
-    const freshUser = await User.findById(user._id);
-    return res.status(200).json({ success: true, token, user: freshUser });
-  } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
-  }
-};
-
+/* ================= UPDATE PROFILE ================= */
 export const updateProfile = async (req, res) => {
   try {
-    const { name, avatar, notificationPrefs } = req.body;
-    const updates = {};
-    if (name) updates.name = name;
-    if (avatar) updates.avatar = avatar;
-    if (notificationPrefs) updates.notificationPrefs = notificationPrefs;
-    const user = await User.findByIdAndUpdate(req.user._id, { $set: updates }, { new: true, runValidators: true });
-    return res.status(200).json({ success: true, user });
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    const { name, email, bio, github, linkedin, avatarUrl, skills } = req.body;
+    if (email && email !== user.email) {
+      const existingEmail = await User.findOne({ email });
+      if (existingEmail) {
+        return res.status(400).json({ success: false, message: 'Email already in use.' });
+      }
+    }
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (bio !== undefined) user.bio = bio;
+    if (github !== undefined) user.github = github;
+    if (linkedin !== undefined) user.linkedin = linkedin;
+    if (avatarUrl !== undefined) user.avatarUrl = avatarUrl;
+    if (skills !== undefined) user.skills = Array.isArray(skills) ? skills : user.skills;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        bio: user.bio,
+        github: user.github,
+        linkedin: user.linkedin,
+        avatarUrl: user.avatarUrl,
+        skills: user.skills,
+        xp: user.xp,
+        streak: user.streak,
+        completedTasks: user.completedTasks,
+      },
+    });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export const changePassword = async (req, res) => {
+/* ================= LOGIN USER ================= */
+export const loginUser = async (req, res) => {
   try {
-    const { currentPassword, newPassword } = req.body;
-    const user = await User.findById(req.user._id).select('+password');
-    const isMatch = await user.matchPassword(currentPassword);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Wrong current password.' });
+    console.log('LOGIN BODY:', req.body);
+
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+
+    /* User not found */
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        field: 'email',
+        message: 'Invalid email or password',
+      });
     }
-    // ✅ user.save() intentional — password hash zaroori hai
-    user.password = newPassword;
+
+    /* Account inactive */
+    if (!user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: 'Account is disabled',
+      });
+    }
+
+    /* Account lock check */
+    if (user.lockUntil && user.lockUntil > Date.now()) {
+      return res.status(403).json({
+        success: false,
+        message:
+          'Account temporarily locked due to multiple failed login attempts',
+      });
+    }
+
+    /* Password match */
+    const isPasswordMatch = await bcrypt.compare(
+      password,
+      user.password
+    );
+
+    if (!isPasswordMatch) {
+      user.loginAttempts += 1;
+
+      if (user.loginAttempts >= 5) {
+        user.lockUntil =
+          Date.now() + 15 * 60 * 1000; // 15 min lock
+      }
+
+      await user.save();
+
+      return res.status(401).json({
+        success: false,
+        field: 'password',
+        message: 'Invalid email or password',
+      });
+    }
+
+    /* Successful login reset */
+    user.loginAttempts = 0;
+    user.lockUntil = null;
+    user.lastLogin = new Date();
+
     await user.save();
-    return res.status(200).json({ success: true, message: 'Password changed.' });
+
+    return res.status(200).json({
+      success: true,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token: generateToken(user._id, user.role),
+      },
+    });
   } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/* ================= LOGOUT USER ================= */
+export const logoutUser = async (req, res) => {
+  try {
+    return res.status(200).json({
+      success: true,
+      message: 'Logged out successfully',
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };

@@ -1,30 +1,30 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
 const questions = [
   {
-    q: "What is React?",
-    options: ["Library", "Framework", "Language", "Database"],
-    answer: "Library",
+    q: 'What is React?',
+    options: ['Library', 'Framework', 'Language', 'Database'],
+    answer: 'Library',
   },
   {
-    q: "Which hook is used for state?",
-    options: ["useEffect", "useState", "useRef", "useMemo"],
-    answer: "useState",
+    q: 'Which hook is used for state?',
+    options: ['useEffect', 'useState', 'useRef', 'useMemo'],
+    answer: 'useState',
   },
   {
-    q: "Which language is used in MERN?",
-    options: ["Python", "Java", "JavaScript", "C++"],
-    answer: "JavaScript",
+    q: 'Which language is used in MERN?',
+    options: ['Python', 'Java', 'JavaScript', 'C++'],
+    answer: 'JavaScript',
   },
   {
-    q: "MongoDB is?",
-    options: ["SQL DB", "NoSQL DB", "Language", "Framework"],
-    answer: "NoSQL DB",
+    q: 'MongoDB is?',
+    options: ['SQL DB', 'NoSQL DB', 'Language', 'Framework'],
+    answer: 'NoSQL DB',
   },
   {
-    q: "Node.js is?",
-    options: ["Frontend", "Backend runtime", "DB", "API"],
-    answer: "Backend runtime",
+    q: 'Node.js is?',
+    options: ['Frontend', 'Backend runtime', 'DB', 'API'],
+    answer: 'Backend runtime',
   },
 ];
 
@@ -57,10 +57,7 @@ const QuizPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-200 to-indigo-300 p-6">
-
-      <h1 className="text-3xl font-bold text-center mb-6">
-        🧠 Quiz Challenge
-      </h1>
+      <h1 className="text-3xl font-bold text-center mb-6">🧠 Quiz Challenge</h1>
 
       {/* TIMER */}
       <div className="text-center mb-4 text-xl font-semibold text-red-600">
@@ -77,7 +74,6 @@ const QuizPage = () => {
 
       {!submitted ? (
         <div className="max-w-xl mx-auto bg-white p-6 rounded-2xl shadow-xl">
-
           <h2 className="text-lg font-semibold mb-4">
             Q{index + 1}. {questions[index].q}
           </h2>
@@ -87,14 +83,12 @@ const QuizPage = () => {
             {questions[index].options.map((opt) => (
               <div
                 key={opt}
-                onClick={() =>
-                  setSelected({ ...selected, [index]: opt })
-                }
+                onClick={() => setSelected({ ...selected, [index]: opt })}
                 className={`p-3 rounded-xl border cursor-pointer transition
                   ${
                     selected[index] === opt
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-100 hover:bg-gray-200"
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-100 hover:bg-gray-200'
                   }`}
               >
                 {opt}
@@ -104,7 +98,6 @@ const QuizPage = () => {
 
           {/* NAV BUTTONS */}
           <div className="flex justify-between mt-6">
-
             <button
               disabled={index === 0}
               onClick={() => setIndex(index - 1)}
@@ -128,24 +121,19 @@ const QuizPage = () => {
                 Next
               </button>
             )}
-
           </div>
-
         </div>
       ) : (
         /* RESULT SCREEN */
         <div className="max-w-xl mx-auto bg-white p-6 rounded-2xl shadow text-center">
-
-          <h2 className="text-2xl font-bold mb-4">
-            🎉 Quiz Completed
-          </h2>
+          <h2 className="text-2xl font-bold mb-4">🎉 Quiz Completed</h2>
 
           <p className="text-xl">
             Score: {score} / {questions.length}
           </p>
 
           <p className="mt-2 text-gray-500">
-            {score >= 4 ? "🔥 Excellent!" : "👍 Keep practicing!"}
+            {score >= 4 ? '🔥 Excellent!' : '👍 Keep practicing!'}
           </p>
 
           <button
@@ -154,10 +142,8 @@ const QuizPage = () => {
           >
             Retry
           </button>
-
         </div>
       )}
-
     </div>
   );
 };

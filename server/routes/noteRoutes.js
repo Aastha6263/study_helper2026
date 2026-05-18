@@ -1,26 +1,21 @@
 import express from 'express';
 import {
-  createNote, getNotes, getNoteById, updateNote,
-  deleteNote, shareNote, getSharedWithMe, togglePin,
+  getNotes,
+  createNote,
+  updateNote,
+  deleteNote,
+  togglePin,
+  toggleFavorite,
+  getSubjects,
+  addSubject,
 } from '../controllers/noteController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
-
-router.use(protect);
-
-router.route('/')
-  .get(getNotes)
-  .post(createNote);
-
-router.get('/shared-with-me', getSharedWithMe);
-
-router.route('/:id')
-  .get(getNoteById)
-  .put(updateNote)
-  .delete(deleteNote);
-
-router.patch('/:id/pin',   togglePin);
-router.post('/:id/share',  shareNote);
+router.route('/').get(protect, getNotes).post(protect, createNote);
+router.route('/subjects').get(protect, getSubjects).post(protect, addSubject);
+router.route('/:id').put(protect, updateNote).delete(protect, deleteNote);
+router.route('/:id/pin').patch(protect, togglePin);
+router.route('/:id/favorite').patch(protect, toggleFavorite);
 
 export default router;

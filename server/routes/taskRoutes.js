@@ -1,34 +1,19 @@
 import express from 'express';
 import {
-  createTask,
   getTasks,
-  getTaskById,
+  createTask,
   updateTask,
   deleteTask,
   updateTaskStatus,
-  addSubTask,
-  toggleSubTask,
-  deleteSubTask,
   getTaskAnalytics,
 } from '../controllers/taskController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// All routes require authentication
-router.use(protect);
-
-// Task CRUD
-router.route('/').get(getTasks).post(createTask);
-router.route('/:id').get(getTaskById).put(updateTask).delete(deleteTask);
-
-// Task status and subtasks
-router.put('/:id/status', updateTaskStatus);
-router.post('/:id/subtasks', addSubTask);
-router.put('/:id/subtasks/:subtaskId', toggleSubTask);
-router.delete('/:id/subtasks/:subtaskId', deleteSubTask);
-
-// Analytics
-router.get('/:id/analytics', getTaskAnalytics);
+router.route('/').get(protect, getTasks).post(protect, createTask);
+router.route('/analytics').get(protect, getTaskAnalytics);
+router.route('/:id').put(protect, updateTask).delete(protect, deleteTask);
+router.route('/:id/status').patch(protect, updateTaskStatus);
 
 export default router;

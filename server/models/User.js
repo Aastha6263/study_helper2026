@@ -1,76 +1,117 @@
 import mongoose from 'mongoose';
-import bcrypt   from 'bcryptjs';
 
 const userSchema = new mongoose.Schema(
   {
+    /* ================= BASIC INFO ================= */
     name: {
-      type:      String,
-      required:  [true, 'Name is required'],
-      trim:      true,
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 2,
+      maxlength: 50,
     },
+
     email: {
-      type:      String,
-      required:  [true, 'Email is required'],
-      unique:    true,
+      type: String,
+      required: true,
+      unique: true,
       lowercase: true,
-      trim:      true,
+      trim: true,
+      index: true,
     },
+
+    bio: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+
+    github: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+
+    linkedin: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+
+    avatarUrl: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+
+    skills: {
+      type: [String],
+      default: [],
+    },
+
+    xp: {
+      type: Number,
+      default: 0,
+    },
+
+    streak: {
+      type: Number,
+      default: 0,
+    },
+
+    completedTasks: {
+      type: Number,
+      default: 0,
+    },
+
     password: {
-      type:   String,
-      select: false,
+      type: String,
+      required: true,
+      minlength: 6,
     },
+
     role: {
-      type:    String,
-      enum:    ['student', 'teacher', 'parent'],
-      default: 'student',
+      type: String,
+      enum: ['student', 'teacher', 'parent'],
+      required: true,
     },
-    avatar:        { type: String, default: '' },
-    children:      [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    parentAccount: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
-    managedRooms:  [{ type: mongoose.Schema.Types.ObjectId, ref: 'Room' }],
-    isEmailVerified:       { type: Boolean, default: true },
-    emailVerificationToken:{ type: String,  default: null },
-    resetPasswordToken:    { type: String,  default: null },
-    resetPasswordExpire:   { type: Date,    default: null },
-    firebaseUid:           { type: String,  default: null },
-    fcmToken:              { type: String,  default: null },
-    isActive:              { type: Boolean, default: true },
-    lastSeen:              { type: Date,    default: Date.now },
-    notificationPrefs: {
-      email: { type: Boolean, default: true  },
-      inApp: { type: Boolean, default: true  },
-      push:  { type: Boolean, default: false },
+
+    /* ================= ACCOUNT STATUS ================= */
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+
+    /* ================= LOGIN SECURITY ================= */
+    loginAttempts: {
+      type: Number,
+      default: 0,
+    },
+
+    lockUntil: {
+      type: Date,
+      default: null,
+    },
+
+    lastLogin: {
+      type: Date,
+      default: null,
+    },
+
+    /* ================= SESSION ================= */
+    tokenVersion: {
+      type: Number,
+      default: 0,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-// Password hash — ONLY when password is modified
-userSchema.pre('save', async function (next) {
-  try {
-    if (!this.isModified('password')) return next();
-    const salt    = await bcrypt.genSalt(12);
-    this.password = await bcrypt.hash(this.password, salt);
-    return next();
-  } catch (err) {
-    return next(err);
-  }
+/* ================= ACCOUNT LOCK CHECK ================= */
+userSchema.virtual('isLocked').get(function () {
+  return !!(this.lockUntil && this.lockUntil > Date.now());
 });
 
-userSchema.methods.matchPassword = async function (enteredPassword) {
-  return bcrypt.compare(enteredPassword, this.password);
-};
-
-userSchema.methods.toJSON = function () {
-  const obj = this.toObject();
-  delete obj.password;
-  delete obj.emailVerificationToken;
-  delete obj.resetPasswordToken;
-  delete obj.resetPasswordExpire;
-  delete obj.fcmToken;
-  delete obj.__v;
-  return obj;
-};
-
-const User = mongoose.model('User', userSchema);
-export default User;
+export default mongoose.model('User', userSchema);

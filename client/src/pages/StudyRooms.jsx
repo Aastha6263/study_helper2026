@@ -1,18 +1,17 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const RoomsPage = () => {
   const [rooms, setRooms] = useState([]);
-  const [roomName, setRoomName] = useState("");
-  const [joinId, setJoinId] = useState("");
+  const [roomName, setRoomName] = useState('');
+  const [joinId, setJoinId] = useState('');
 
   const navigate = useNavigate();
 
-  const generateRoomId = () =>
-    Math.random().toString(36).substring(2, 8);
+  const generateRoomId = () => Math.random().toString(36).substring(2, 8);
 
   const createRoom = () => {
-    if (!roomName.trim()) return alert("Enter room name");
+    if (!roomName.trim()) return alert('Enter room name');
 
     const newRoom = {
       id: generateRoomId(),
@@ -20,22 +19,19 @@ const RoomsPage = () => {
     };
 
     setRooms([...rooms, newRoom]);
-    setRoomName("");
+    setRoomName('');
 
     navigate(`/rooms/${newRoom.id}`);
   };
 
   const joinRoom = () => {
-    if (!joinId.trim()) return alert("Enter Room ID");
+    if (!joinId.trim()) return alert('Enter Room ID');
     navigate(`/rooms/${joinId}`);
   };
 
   return (
     <div className="min-h-screen p-6 bg-gradient-to-br from-blue-100 to-indigo-100">
-
-      <h1 className="text-3xl font-bold mb-6 text-center">
-        🏫 Study Rooms
-      </h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">🏫 Study Rooms</h1>
 
       {/* Create */}
       <div className="max-w-xl mx-auto bg-white p-4 rounded-xl shadow mb-4">
@@ -73,9 +69,7 @@ const RoomsPage = () => {
       <div className="max-w-xl mx-auto">
         <h3 className="font-semibold mb-2">Available Rooms</h3>
 
-        {rooms.length === 0 && (
-          <p className="text-gray-500">No rooms yet</p>
-        )}
+        {rooms.length === 0 && <p className="text-gray-500">No rooms yet</p>}
 
         {rooms.map((room) => (
           <div
@@ -96,7 +90,6 @@ const RoomsPage = () => {
           </div>
         ))}
       </div>
-
     </div>
   );
 };

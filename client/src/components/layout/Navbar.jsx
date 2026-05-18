@@ -12,10 +12,11 @@ const Navbar = ({ onMenuClick }) => {
   const [showNotifs, setShowNotifs] = useState(false);
 
   return (
-    <header className="h-16 flex items-center px-4 gap-3 sticky top-0 z-20 lg:pl-72
+    <header
+      className="h-16 flex items-center px-4 gap-3 sticky top-0 z-20 lg:pl-72
                        bg-[#E9EFEC]/70 backdrop-blur-2xl border-b border-white/40
-                       shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-
+                       shadow-[0_4px_20px_rgba(0,0,0,0.04)]"
+    >
       {/* Mobile hamburger */}
       <button
         onClick={onMenuClick}
@@ -45,9 +46,11 @@ const Navbar = ({ onMenuClick }) => {
           />
 
           {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 w-2.5 h-2.5
+            <span
+              className="absolute top-1 right-1 w-2.5 h-2.5
                              rounded-full bg-[#16423C]
-                             border-2 border-[#E9EFEC] shadow" />
+                             border-2 border-[#E9EFEC] shadow"
+            />
           )}
         </button>
 
@@ -60,7 +63,7 @@ const Navbar = ({ onMenuClick }) => {
 
       {/* Avatar */}
       <Link
-        to="/settings"
+        to="/profile"
         className="ml-1 p-[2px] rounded-2xl
                    hover:bg-white/50 hover:shadow-sm
                    transition-all duration-200"

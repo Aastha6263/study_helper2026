@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { Clock, Plus, Trash2 } from "lucide-react";
+import { useState } from 'react';
+import { Clock, Plus, Trash2 } from 'lucide-react';
 
 const SmartPlannerPage = () => {
   const [tasks, setTasks] = useState([]);
-  const [input, setInput] = useState("");
-  const [time, setTime] = useState("");
+  const [input, setInput] = useState('');
+  const [time, setTime] = useState('');
 
   const addTask = () => {
     if (!input || !time) return;
@@ -16,8 +16,8 @@ const SmartPlannerPage = () => {
     };
 
     setTasks([...tasks, newTask]);
-    setInput("");
-    setTime("");
+    setInput('');
+    setTime('');
   };
 
   const deleteTask = (id) => {
@@ -26,7 +26,6 @@ const SmartPlannerPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-indigo-100 p-6">
-
       {/* Header */}
       <h1 className="text-2xl font-bold mb-6">Smart Planner 📅</h1>
 
@@ -77,7 +76,6 @@ const SmartPlannerPage = () => {
           </div>
         ))}
       </div>
-
     </div>
   );
 };

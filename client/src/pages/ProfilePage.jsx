@@ -1,203 +1,298 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import toast from 'react-hot-toast';
+import { updateProfile } from '../features/auth/authSlice';
 
 const ProfilePage = () => {
+  const dispatch = useDispatch();
+  const { user: authUser } = useSelector((state) => state.auth);
   const [edit, setEdit] = useState(false);
-
+  const [skillInput, setSkillInput] = useState('');
+  const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState({
-    name: "Thakur Saab",
-    email: "thakur@email.com",
-    bio: "Focused learner 🚀",
-    skills: ["DSA", "React"],
-    github: "",
-    linkedin: "",
-    xp: 120,
-    streak: 5,
-    tasks: 20,
-    image: "",
+    name: '',
+    email: '',
+    bio: '',
+    skills: [],
+    github: '',
+    linkedin: '',
+    xp: 0,
+    streak: 0,
+    tasks: 0,
+    avatarUrl: '',
   });
 
-  const [skillInput, setSkillInput] = useState("");
-
-  /* 🔄 LOAD */
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("profile"));
-    if (saved) setProfile(saved);
-  }, []);
+    if (!authUser) return;
 
-  /* 💾 SAVE */
-  const saveProfile = () => {
-    localStorage.setItem("profile", JSON.stringify(profile));
-    setEdit(false);
-    alert("Profile Updated ✅");
+    setProfile({
+      name: authUser.name || '',
+      email: authUser.email || '',
+      bio: authUser.bio || '',
+      skills: authUser.skills || [],
+      github: authUser.github || '',
+      linkedin: authUser.linkedin || '',
+      xp: authUser.xp || 0,
+      streak: authUser.streak || 0,
+      tasks: authUser.completedTasks || 0,
+      avatarUrl: authUser.avatarUrl || '',
+    });
+  }, [authUser]);
+
+  const saveProfile = async () => {
+    setSaving(true);
+    try {
+      const result = await dispatch(
+        updateProfile({
+          name: profile.name,
+          email: profile.email,
+          bio: profile.bio,
+          github: profile.github,
+          linkedin: profile.linkedin,
+          avatarUrl: profile.avatarUrl,
+          skills: profile.skills,
+        }),
+      ).unwrap();
+
+      setProfile((prev) => ({
+        ...prev,
+        xp: result.user.xp || prev.xp,
+        streak: result.user.streak || prev.streak,
+        tasks: result.user.completedTasks || prev.tasks,
+      }));
+      setEdit(false);
+      toast.success('Profile updated successfully');
+    } catch (error) {
+      toast.error(error || 'Failed to update profile');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  /* 📸 IMAGE */
   const handleImage = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      setProfile({ ...profile, image: reader.result });
+      setProfile((prev) => ({ ...prev, avatarUrl: reader.result }));
     };
     reader.readAsDataURL(file);
   };
 
-  /* ➕ ADD SKILL */
   const addSkill = () => {
-    if (!skillInput) return;
-    setProfile({
-      ...profile,
-      skills: [...profile.skills, skillInput],
-    });
-    setSkillInput("");
+    const value = skillInput.trim();
+    if (!value) return;
+
+    setProfile((prev) => ({
+      ...prev,
+      skills: prev.skills.includes(value)
+        ? prev.skills
+        : [...prev.skills, value],
+    }));
+    setSkillInput('');
   };
 
-  /* ❌ REMOVE SKILL */
   const removeSkill = (skill) => {
-    setProfile({
-      ...profile,
-      skills: profile.skills.filter((s) => s !== skill),
-    });
+    setProfile((prev) => ({
+      ...prev,
+      skills: prev.skills.filter((item) => item !== skill),
+    }));
   };
+
+  if (!authUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-600">Loading profile…</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-100 p-6">
-
-      <div className="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow">
-
-        {/* PROFILE HEADER */}
+      <div className="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow-lg">
         <div className="flex items-center gap-4 mb-6">
           <img
-            src={profile.image || "https://via.placeholder.com/100"}
-            className="w-24 h-24 rounded-full object-cover"
+            src={profile.avatarUrl || 'https://via.placeholder.com/100'}
             alt="profile"
+            className="w-24 h-24 rounded-full object-cover border"
           />
 
-          {edit && (
-            <input type="file" onChange={handleImage} />
-          )}
-
-          <div>
-            <h2 className="text-2xl font-bold">{profile.name}</h2>
-            <p className="text-gray-500">{profile.email}</p>
+          <div className="flex-1">
+            <div className="flex flex-col gap-2">
+              <div>
+                <h2 className="text-2xl font-bold">{profile.name}</h2>
+                <p className="text-gray-500">{profile.email}</p>
+              </div>
+              {edit && (
+                <label className="text-sm text-gray-500">
+                  Change avatar
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImage}
+                    className="mt-2 block w-full text-sm"
+                  />
+                </label>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* EDIT FIELDS */}
-        {edit && (
-          <>
+        {edit ? (
+          <div className="space-y-4">
             <input
-              className="w-full p-2 border mb-2"
+              className="w-full p-2 border rounded"
               value={profile.name}
-              onChange={(e) =>
-                setProfile({ ...profile, name: e.target.value })
-              }
+              placeholder="Name"
+              onChange={(e) => setProfile({ ...profile, name: e.target.value })}
             />
 
             <input
-              className="w-full p-2 border mb-2"
+              className="w-full p-2 border rounded"
               value={profile.email}
+              placeholder="Email"
               onChange={(e) =>
                 setProfile({ ...profile, email: e.target.value })
               }
             />
 
             <textarea
-              className="w-full p-2 border mb-2"
+              className="w-full p-2 border rounded"
               value={profile.bio}
-              onChange={(e) =>
-                setProfile({ ...profile, bio: e.target.value })
-              }
+              placeholder="Bio"
+              onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
             />
 
             <input
-              placeholder="GitHub link"
-              className="w-full p-2 border mb-2"
+              className="w-full p-2 border rounded"
               value={profile.github}
+              placeholder="GitHub Link"
               onChange={(e) =>
                 setProfile({ ...profile, github: e.target.value })
               }
             />
 
             <input
-              placeholder="LinkedIn link"
-              className="w-full p-2 border mb-2"
+              className="w-full p-2 border rounded"
               value={profile.linkedin}
+              placeholder="LinkedIn Link"
               onChange={(e) =>
                 setProfile({ ...profile, linkedin: e.target.value })
               }
             />
+
+            <div className="space-y-2">
+              <div className="text-sm font-semibold text-gray-700">Skills</div>
+              <div className="flex flex-wrap gap-2">
+                {profile.skills.length > 0 ? (
+                  profile.skills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="bg-blue-200 px-3 py-1 rounded-full flex items-center gap-2"
+                    >
+                      {skill}
+                      <button
+                        type="button"
+                        onClick={() => removeSkill(skill)}
+                        className="text-red-500"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-gray-500">No skills added yet.</p>
+                )}
+              </div>
+              <div className="flex gap-2 mt-2">
+                <input
+                  value={skillInput}
+                  onChange={(e) => setSkillInput(e.target.value)}
+                  className="flex-1 p-2 border rounded"
+                  placeholder="Add skill"
+                />
+                <button
+                  type="button"
+                  onClick={addSkill}
+                  className="bg-blue-500 text-white px-4 rounded"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <p className="mb-4 text-gray-700">
+              {profile.bio || 'No bio added yet.'}
+            </p>
+
+            <div className="mb-4">
+              <h3 className="font-semibold mb-2">Skills</h3>
+              <div className="flex flex-wrap gap-2">
+                {profile.skills.length > 0 ? (
+                  profile.skills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="bg-blue-200 px-3 py-1 rounded-full"
+                    >
+                      {skill}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-gray-500">No skills added.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="mb-4 space-y-1">
+              {profile.github && (
+                <p>
+                  <strong>GitHub:</strong> {profile.github}
+                </p>
+              )}
+              {profile.linkedin && (
+                <p>
+                  <strong>LinkedIn:</strong> {profile.linkedin}
+                </p>
+              )}
+            </div>
           </>
         )}
 
-        {/* BIO */}
-        <p className="mb-4">{profile.bio}</p>
-
-        {/* SKILLS */}
-        <div className="mb-4">
-          <h3 className="font-semibold mb-2">Skills</h3>
-
-          <div className="flex flex-wrap gap-2">
-            {profile.skills.map((skill) => (
-              <span
-                key={skill}
-                className="bg-blue-200 px-3 py-1 rounded-full flex items-center gap-1"
-              >
-                {skill}
-                {edit && (
-                  <button onClick={() => removeSkill(skill)}>❌</button>
-                )}
-              </span>
-            ))}
-          </div>
-
-          {edit && (
-            <div className="flex gap-2 mt-2">
-              <input
-                value={skillInput}
-                onChange={(e) => setSkillInput(e.target.value)}
-                className="p-2 border"
-                placeholder="Add skill"
-              />
-              <button onClick={addSkill} className="bg-blue-500 text-white px-3">
-                Add
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* SOCIAL */}
-        <div className="mb-4">
-          {profile.github && <p>GitHub: {profile.github}</p>}
-          {profile.linkedin && <p>LinkedIn: {profile.linkedin}</p>}
-        </div>
-
-        {/* STATS */}
-        <div className="grid grid-cols-3 text-center mb-4">
-          <div>
+        <div className="grid grid-cols-3 text-center gap-4 mb-6">
+          <div className="bg-gray-50 p-4 rounded-xl">
             <p className="text-xl font-bold">{profile.xp}</p>
-            <p>XP</p>
+            <p className="text-sm text-gray-500">XP</p>
           </div>
-          <div>
+          <div className="bg-gray-50 p-4 rounded-xl">
             <p className="text-xl font-bold">{profile.streak}</p>
-            <p>Streak</p>
+            <p className="text-sm text-gray-500">Streak</p>
           </div>
-          <div>
+          <div className="bg-gray-50 p-4 rounded-xl">
             <p className="text-xl font-bold">{profile.tasks}</p>
-            <p>Tasks</p>
+            <p className="text-sm text-gray-500">Tasks</p>
           </div>
         </div>
 
-        {/* BUTTONS */}
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           {edit ? (
-            <button
-              onClick={saveProfile}
-              className="bg-green-500 text-white px-4 py-2 rounded"
-            >
-              Save
-            </button>
+            <>
+              <button
+                onClick={saveProfile}
+                disabled={saving}
+                className="bg-green-500 disabled:opacity-60 text-white px-4 py-2 rounded"
+              >
+                {saving ? 'Saving…' : 'Save Profile'}
+              </button>
+              <button
+                onClick={() => setEdit(false)}
+                className="bg-gray-500 text-white px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+            </>
           ) : (
             <button
               onClick={() => setEdit(true)}
@@ -206,17 +301,7 @@ const ProfilePage = () => {
               Edit Profile
             </button>
           )}
-
-          {edit && (
-            <button
-              onClick={() => setEdit(false)}
-              className="bg-gray-500 text-white px-4 py-2 rounded"
-            >
-              Cancel
-            </button>
-          )}
         </div>
-
       </div>
     </div>
   );

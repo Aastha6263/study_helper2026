@@ -30,12 +30,8 @@ import RoomsPage from './pages/RoomsPage';
 import Flash from './pages/FlashcardsPage';
 import QuizesPage from './pages/QuizePage';
 
-
-
-
 // Layout
 import AppLayout from './components/layout/AppLayout';
-
 
 // Loader
 const Loader = () => (
@@ -72,161 +68,180 @@ const App = () => {
 
   return (
     <BrowserRouter>
-
       <Toaster position="top-right" />
 
       <Routes>
-
         {/* 🔥 ALWAYS START FROM LOGIN */}
         <Route path="/" element={<Navigate to="/login" replace />} />
 
         {/* PUBLIC */}
         <Route
           path="/login"
-          element={
-            token
-              ? <Navigate to="/dashboard" replace />
-              : <LoginPage />
-          }
+          element={token ? <Navigate to="/dashboard" replace /> : <LoginPage />}
         />
-
         <Route
           path="/register"
           element={
-            token
-              ? <Navigate to="/dashboard" replace />
-              : <RegisterPage />
+            token ? <Navigate to="/dashboard" replace /> : <RegisterPage />
           }
         />
+        <Route path="/parent-dashboard" element={<ParentDashboard />} />
 
         {/* PROTECTED */}
-        <Route element={
-          <PrivateRoute>
-            <AppLayout />
-          </PrivateRoute>
-        }>
-
+        <Route
+          element={
+            <PrivateRoute>
+              <AppLayout />
+            </PrivateRoute>
+          }
+        >
           <Route path="/dashboard" element={<DashboardPage />} />
 
-          <Route path="/tasks" element={
-            <PrivateRoute roles={['student']}>
-              <TasksPage />
-            </PrivateRoute>
-          } />
+          {/* Student Routes */}
+          <Route
+            path="/tasks"
+            element={
+              <PrivateRoute roles={['student', 'parent']}>
+                <TasksPage />
+              </PrivateRoute>
+            }
+          />
 
-          <Route path="/notes" element={
-            <PrivateRoute roles={['student']}>
-              <NotesPage />
-            </PrivateRoute>
-          } />
+          <Route
+            path="/notes"
+            element={
+              <PrivateRoute roles={['student']}>
+                <NotesPage />
+              </PrivateRoute>
+            }
+          />
 
+          <Route
+            path="/pomodoro"
+            element={
+              <PrivateRoute roles={['student']}>
+                <Pomodoro />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/focus-mode"
+            element={
+              <PrivateRoute roles={['student']}>
+                <Focusmode />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/flashcards"
+            element={
+              <PrivateRoute roles={['student']}>
+                <Flash />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/ai"
+            element={
+              <PrivateRoute roles={['student']}>
+                <AIAssistantPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/ai-planner"
+            element={
+              <PrivateRoute roles={['student']}>
+                <SmartPlanner />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <PrivateRoute roles={['student', 'teacher', 'parent']}>
+                <AnalyticsPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/study-room"
+            element={
+              <PrivateRoute roles={['student', 'teacher']}>
+                <StudyRoom />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/leaderboard"
+            element={
+              <PrivateRoute roles={['student']}>
+                <Leaderboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/badges"
+            element={
+              <PrivateRoute roles={['student']}>
+                <Badge />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/focus-score"
+            element={
+              <PrivateRoute roles={['student']}>
+                <Focusscore />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/distraction"
+            element={
+              <PrivateRoute roles={['student']}>
+                <Distraction />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/files"
+            element={
+              <PrivateRoute roles={['student', 'teacher']}>
+                <Filesharing />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/settings" element={<SettingsPage />} />
 
+          <Route path="/profile" element={<ProfilePage />} />
 
-
-          <Route path="/pomodoro" element={
-            <PrivateRoute roles={['student']}>
-              <Pomodoro />
-            </PrivateRoute>
-          } />
-           <Route path="/focus-mode" element={
-            <PrivateRoute roles={['student']}>
-              <Focusmode />
-            </PrivateRoute>
-          } />
-         <Route path="/flashcards" element={
-            <PrivateRoute roles={['student']}>
-              <Flash />
-            </PrivateRoute>
-          } /> 
-            <Route path="/ai" element={
-            <PrivateRoute roles={['student']}>
-              <AIAssistantPage />
-            </PrivateRoute>
-          } /> 
-          <Route path="/ai-planner" element={
-            <PrivateRoute roles={['student']}>
-              <SmartPlanner />
-            </PrivateRoute>
-          } /> 
-          <Route path="/analytics" element={
-            <PrivateRoute roles={['student']}>
-              <AnalyticsPage />
-            </PrivateRoute>
-          } /> 
-           <Route path="/study-room" element={
-            <PrivateRoute roles={['student']}>
-              <StudyRoom />
-            </PrivateRoute>
-          } /> 
-            <Route path="/leaderboard" element={
-            <PrivateRoute roles={['student']}>
-              <Leaderboard  />
-            </PrivateRoute>
-          } /> 
-           <Route path="/badges" element={
-            <PrivateRoute roles={['student']}>
-              <Badge  />
-            </PrivateRoute>
-          } /> 
-          <Route path="/focus-score" element={
-            <PrivateRoute roles={['student']}>
-              <Focusscore  />
-            </PrivateRoute>
-          } /> 
-             <Route path="/distraction" element={
-            <PrivateRoute roles={['student']}>
-              <Distraction  />
-            </PrivateRoute>
-          } /> 
-            <Route path="/files" element={
-            <PrivateRoute roles={['student']}>
-              <Filesharing  />
-            </PrivateRoute>
-          } /> 
-          <Route path="/settings" element={
-            <PrivateRoute roles={['student']}>
-              <SettingsPage  />
-            </PrivateRoute>
-          } /> 
-
-             <Route path="/profile" element={
-            <PrivateRoute roles={['student']}>
-              <ProfilePage />
-            </PrivateRoute>
-          } /> 
-          
-             <Route path="/quizes" element={
-            <PrivateRoute roles={['student']}>
-              <QuizesPage />
-            </PrivateRoute>
-          } /> 
-
-
-
-
-
-
-
-
+          <Route
+            path="/quizes"
+            element={
+              <PrivateRoute roles={['student', 'teacher']}>
+                <QuizesPage />
+              </PrivateRoute>
+            }
+          />
 
           <Route path="/rooms" element={<RoomsPage />} />
           <Route path="/rooms/:id" element={<RoomDetailPage />} />
 
-         
-
           <Route path="/notifications" element={<NotificationsPage />} />
 
-          <Route path="/parent/*" element={
-            <PrivateRoute roles={['parent']}>
-              <ParentDashboard />
-            </PrivateRoute>
-          } />
-
+          <Route
+            path="/parent/*"
+            element={
+              <PrivateRoute roles={['parent']}>
+                <ParentDashboard />
+              </PrivateRoute>
+            }
+          />
         </Route>
 
         {/* FALLBACK */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
-
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   );
